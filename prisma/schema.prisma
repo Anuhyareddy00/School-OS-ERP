@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator pyclient {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum PaymentStatus {
+  PAID
+  PARTIAL
+  DUE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+
+  studentProfile Student? @relation("StudentUser")
+  teacherProfile Teacher? @relation("TeacherUser")
+
+  parentLinks ParentStudent[] @relation("ParentLinks")
+}
+
+model ClassRoom {
+  id        String   @id @default(uuid())
+  grade     String
+  section   String
+  createdAt DateTime @default(now())
+
+  students     Student[]
+  assignments  TeacherAssignment[]
+  timetable    TimeTable[]
+  exams        Exam[]
+  feeStructure FeeStructure[]
+}
+
+model Teacher {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  employeeCode String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation("TeacherUser", fields: [userId], references: [id])
+  assignments  TeacherAssignment[]
+}
+
+model Student {
+  id            String   @id @default(uuid())
+  admissionNo   String   @unique
+  name          String
+  rollNo        Int
+  classRoomId   String
+  createdAt     DateTime @default(now())
+
+  studentUserId String?  @unique
+  studentUser   User?    @relation("StudentUser", fields: [studentUserId], references: [id])
+
+  classRoom     ClassRoom @relation(fields: [classRoomId], references: [id])
+  parentLinks   ParentStudent[]
+  attendance    Attendance[]
+  marks         Mark[]
+  feePayments   FeePayment[]
+  aiReports     AIReport[]
+  messages      Message[]
+}
+
+model ParentStudent {
+  id           String @id @default(uuid())
+  parentUserId String
+  studentId    String
+
+  parentUser User    @relation("ParentLinks", fields: [parentUserId], references: [id])
+  student    Student @relation(fields: [studentId], references: [id])
+
+  @@unique([parentUserId, studentId])
+}
+
+model Subject {
+  id   String @id @default(uuid())
+  name String @unique
+}
+
+model TeacherAssignment {
+  id          String @id @default(uuid())
+  teacherId   String
+  classRoomId String
+  subjectId   String
+
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id])
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+
+  @@unique([teacherId, classRoomId, subjectId])
+}
+
+model TimeTable {
+  id          String @id @default(uuid())
+  classRoomId String
+  dayOfWeek   String
+  periodNo    Int
+  subjectId   String
+  teacherId   String
+  startTime   String
+  endTime     String
+
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id])
+  subject   Subject   @relation(fields: [subjectId], references: [id])
+  teacher   Teacher   @relation(fields: [teacherId], references: [id])
+}
+
+model Attendance {
+  id          String           @id @default(uuid())
+  studentId   String
+  classRoomId String
+  date        DateTime
+  status      AttendanceStatus
+  markedBy    String
+  markedAt    DateTime @default(now())
+
+  student   Student   @relation(fields: [studentId], references: [id])
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id])
+
+  @@unique([studentId, date])
+}
+
+model Exam {
+  id          String @id @default(uuid())
+  classRoomId String
+  name        String
+  term        String
+  year        Int
+  maxMarks    Int
+
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id])
+  marks     Mark[]
+}
+
+model Mark {
+  id         String @id @default(uuid())
+  examId     String
+  studentId  String
+  subjectId  String
+  score      Float
+  grade      String
+  uploadedBy String
+
+  exam    Exam    @relation(fields: [examId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@unique([examId, studentId, subjectId])
+}
+
+model FeeStructure {
+  id           String @id @default(uuid())
+  classRoomId  String
+  academicYear Int
+  feeType      String
+  amount       Float
+  dueDate      DateTime
+
+  classRoom ClassRoom @relation(fields: [classRoomId], references: [id])
+  payments  FeePayment[]
+}
+
+model FeePayment {
+  id             String        @id @default(uuid())
+  studentId      String
+  feeStructureId String
+  paidAmount     Float
+  status         PaymentStatus
+  paymentDate    DateTime?
+  receiptNo      String?
+  paymentMode    String?
+
+  student      Student      @relation(fields: [studentId], references: [id])
+  feeStructure FeeStructure @relation(fields: [feeStructureId], references: [id])
+}
+
+model AIReport {
+  id         String   @id @default(uuid())
+  studentId  String
+  createdAt  DateTime @default(now())
+  reportType String
+  jsonOutput Json
+
+  student Student @relation(fields: [studentId], references: [id])
+}
+
+model Message {
+  id            String   @id @default(uuid())
+  senderRole    Role
+  senderUserId  String
+  recipientRole Role
+  studentId     String?
+  title         String
+  body          String
+  createdAt     DateTime @default(now())
+
+  student Student? @relation(fields: [studentId], references: [id])
+}

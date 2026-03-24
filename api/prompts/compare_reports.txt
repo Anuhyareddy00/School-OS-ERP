@@ -1,0 +1,1 @@
+Compare two term reports. Return STRICT JSON with improvements and declines.
