@@ -19,18 +19,23 @@ env/
 api/.venv/
 api/.env
 api/.env.*
+!api/.env.example
 
 # Node / Next.js
 node_modules/
 web/node_modules/
 web/.next/
+web/.next_stale_*/
+web/.next.bak_*/
 web/out/
 web/.env.local
 web/.env.*
+!web/.env.example
 
 # Prisma generated / local artifacts
 prisma/.env
 prisma/.env.*
+!prisma/.env.example
 
 # Logs
 *.log
@@ -42,4 +47,3 @@ pnpm-debug.log*
 # IDE
 .vscode/
 .idea/
-
