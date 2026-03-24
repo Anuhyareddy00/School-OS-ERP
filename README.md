@@ -1,6 +1,6 @@
 # School OS
 
-`School OS` is a Gibbon-style school ERP starter with an embedded AI assistant called `OS Agent`.
+`School OS` is  school ERP starter with an embedded AI assistant called `OS Agent`.
 
 Current stack:
 - `web/`: Next.js app
