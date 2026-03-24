@@ -24,7 +24,7 @@ Current stack:
 - `OS Agent` reminder creation/list endpoints
 - Branded web UI with Home, Login, Admin, Teacher, Portal, OS Agent pages
 
-## Gibbon-like ERP Coverage Roadmap
+## ERP Coverage Roadmap
 These modules are represented in data model and roadmap scope:
 - Admissions & enrollment
 - Student information system
